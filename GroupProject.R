@@ -52,19 +52,18 @@ rest_complete = na.omit(business_rest_foo)
 #Change char variable to factors
 rest_complete = as.data.frame(unclass(rest_complete))
 
-#Create training data and test data
+#Create training data and crossvalidationData
 train = createDataPartition(rest_complete$stars, p = 0.7, list = F)
-train.data = rest_complete[-train]
-
-#Create testing data
-
+train.data = rest_complete[train,]
+crossValidationData = rest_complete[-train,]
+dim(train.data)
 
 #Hist of stars
 ggplot(data = rest_complete, aes(x = stars))+geom_histogram(binwidth = 0.5)
 
 
-#Apply random forest to all variables
-rf.1 = randomForest(as.factor(stars) ~ ., data = rest_complete, 
+#Apply random forest to all variables with train data
+rf.1 = randomForest(as.factor(stars) ~ ., data = train.data, 
                     importance = TRUE, ntree = 100)
 
 
@@ -81,7 +80,13 @@ imp_var
 #plot importance plot
 varImpPlot(rf.1, main = "Variable Importance: All Variables", pch=16, col = 'blue')
 
-#Predict
+#Predict with crossvalidationdata
+predict_rf1 = predict(rf.1, crossValidationData, type = "class")
+confusion_matrix = confusionMatrix(predict_rf1, as.factor(crossValidationData$stars))
+#Confusion matrix is to describe the preformance of a classification model
+confusion_matrix
+
+
 
 
 
